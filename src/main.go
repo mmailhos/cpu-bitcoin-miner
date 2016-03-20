@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/btcsuite/btcrpcclient"
 	"io/ioutil"
 	"log"
@@ -15,20 +16,29 @@ type Config struct {
 	Account  string `json:"account"`
 }
 
-//Missing: capabilities, transactions, mutable
+// Missing: depends[]
+type TransactionTemplate struct {
+	Hash   string `json:"hash"`
+	Fee    uint   `json:"fee"`
+	Data   string `json:"data"`
+	SigOps uint   `json:"sigops"`
+}
+
+//Missing: capabilities, mutable
 type ResultTemplate struct {
-	PreviousBlockHash string `json:"previousblockhash"`
-	Target            string `json:"target"`
-	NonceRange        string `json:"noncerange"`
-	MinTime           uint   `json:"mintime"`
-	SigOpLimit        uint   `json:"sigoplimit"`
-	CurTime           uint   `json:"curtime"`
-	Height            uint   `json:"height"`
-	Version           uint   `json:"version"`
-	Bits              string `json:"bits"`
-	CoinBaseValue     uint   `json:"coinbasevalue"`
-	SizeLimit         uint   `json:"sizelimit"`
-	LongPollId        string `json:"longpollid"`
+	PreviousBlockHash string                `json:"previousblockhash"`
+	Target            string                `json:"target"`
+	NonceRange        string                `json:"noncerange"`
+	Bits              string                `json:"bits"`
+	LongPollId        string                `json:"longpollid"`
+	MinTime           uint                  `json:"mintime"`
+	SigOpLimit        uint                  `json:"sigoplimit"`
+	CurTime           uint                  `json:"curtime"`
+	Height            uint                  `json:"height"`
+	Version           uint                  `json:"version"`
+	CoinBaseValue     uint                  `json:"coinbasevalue"`
+	SizeLimit         uint                  `json:"sizelimit"`
+	Transactions      []TransactionTemplate `json:"transactions"`
 }
 
 type BlockTemplate struct {
@@ -36,24 +46,21 @@ type BlockTemplate struct {
 	Result ResultTemplate `json:"result"`
 }
 
-func VerifyAccount(client *btcrpcclient.Client, name string) bool {
+func VerifyAccount(client *btcrpcclient.Client, name string) (bool, error) {
 	adr, err := client.GetAccountAddress(name)
 	if err != nil {
-		log.Printf("Error getting account address %s", name)
-		return false
+		return false, err
 	} else {
 		wal, err := client.ValidateAddress(adr)
 		if err != nil {
-			log.Printf("Error validating account address")
-			return false
+			return false, err
 		} else if !wal.IsValid {
-			log.Printf("Invalid account address")
-			return false
+			return false, err
 		}
-		log.Printf("Account: %s, Address: %s, PubKey: %s\n", name, adr, wal.PubKey)
 	}
-	return true
+	return true, nil
 }
+
 func ListAccounts(client *btcrpcclient.Client) {
 	accounts, err := client.ListAccounts()
 	if err != nil {
@@ -77,19 +84,25 @@ func readconf() (conf Config) {
 	return
 }
 
-// VERY Temporary work-around for GetBlockTemplate ;)
-func GetBlockTemplate(user, password, host string) ResultTemplate {
-	command := "curl -u " + user + ":" + password + ` --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "getblocktemplate", "params": [] }'   -H 'content-type: text/plain;' http://` + host + "/"
+// VERY Temporary work-around for GetBlockTemplate() from BP023 ;)
+func GetResultTemplate(user, password, host string) (rtp ResultTemplate, err error) {
+	var btp BlockTemplate
+	command := "curl -u " + user + ":" + password + ` --data-binary '{"jsonrpc": "1.1", "id":"0", "method": "getblocktemplate", "params": [{"capabilities": ["coinbasetxn", "workid", "coinbase/append"]}] }'   -H 'content-type: application/json;' http://` + host + "/"
+	log.Printf(command)
 	out, err := exec.Command("sh", "-c", command).Output()
 	if err != nil {
-		log.Fatal(err)
+		return
 	}
-	var btp BlockTemplate
 	err = json.Unmarshal(out, &btp)
 	if err != nil {
-		log.Fatalf("Error:", err)
+		return
 	}
-	return btp.Result
+	if btp.Error == "" {
+		return btp.Result, nil
+	} else {
+		return rtp, errors.New(btp.Error)
+	}
+	return
 }
 
 func main() {
@@ -104,12 +117,16 @@ func main() {
 		Pass:         conf.Password,
 	}, nil)
 	if err != nil {
-		log.Fatalf("error creating new btc client: %v", err)
+		log.Fatalf("Error creating new btc client: %v", err)
 	}
 	// Verifying Account
-	if !VerifyAccount(client, conf.Account) {
+	if val, err := VerifyAccount(client, conf.Account); !val {
+		log.Printf("Error: %v ", err)
 		ListAccounts(client)
 	}
-	// Get and Parse BlockTemplate to begin minning
-	GetBlockTemplate(conf.User, conf.Password, conf.Host)
+	//Loading and parsing values from Bitcoin API call
+	_, err = GetResultTemplate(conf.User, conf.Password, conf.Host)
+	if err != nil {
+		log.Fatalf("Error getting mining data: %v", err)
+	}
 }
