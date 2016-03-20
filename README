@@ -2,6 +2,10 @@
 CPU Bitcoin Miner in Go
 
 Implementation of a Bitcoin mining client in Go to take advantage of the built-in concurrency primitives of the language. 
+This project is built based on BP0023.
+
 Educational purpose at start for a deep and better understanding of bitcoin "under the hood" and discovery of Go.
 
+The dependencies will be removed over time.
 Dependencies: Using btcsuite/btcrpcclient for the JSON-RPC call. 
+
