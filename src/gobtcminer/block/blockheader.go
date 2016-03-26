@@ -7,7 +7,10 @@ For difficulty history, see: http://www.coindesk.com/data/bitcoin-mining-difficu
 
 package block
 
-import "time"
+import (
+	"math/rand"
+	"time"
+)
 
 //Macros
 const BITCOIN_CREATION_DATE uint32 = 1230940800
@@ -18,7 +21,7 @@ type BlockHeader struct {
 	HashPrevBlock string  //256bits Hash of the previous block header
 	HashMerkRoot  string  //256bits Hash on all of the transactions in the block
 	Time          uint32  //Timestamp - Epoch time
-	Bits          float64 //Current target in compact format
+	Bits          float64 //Current target (difficulty) in compact format
 	Nonce         uint32  //32Bits number - iterator
 }
 
@@ -48,4 +51,20 @@ func Validate(block BlockHeader) bool {
 		return false
 	}
 	return true
+}
+
+//Make a semi-random block header. Uses pre-defined difficulty, time, nonce and version. Faster to generate than fully random blockheader.
+func MakeSemiRandom_BlockHeader(difficulty float64, version, nonce, time uint32) BlockHeader {
+	hashprevblock := randStringBytes(32)
+	hashmerkroot := randStringBytes(32)
+	return BlockHeader{Version: version, HashPrevBlock: hashprevblock, HashMerkRoot: hashmerkroot, Bits: difficulty, Time: time, Nonce: nonce}
+}
+
+func randStringBytes(n int) string {
+	const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
 }
