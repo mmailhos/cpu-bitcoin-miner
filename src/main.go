@@ -31,4 +31,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error getting mining data: %v", err)
 	}
+	diff, err := client.GetDifficulty(conf.User, conf.Password, conf.Host)
+	if err != nil {
+		log.Fatal("Error getting difficulty: %v", err)
+	}
+	log.Println(diff)
 }
