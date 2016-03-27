@@ -9,3 +9,4 @@ Educational purpose at start for a deep and better understanding of bitcoin "und
 The dependencies will be removed over time.
 Dependencies: Using btcsuite/btcrpcclient for the JSON-RPC call. 
 
+Author: Mathieu Mailhos
