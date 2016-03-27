@@ -39,5 +39,5 @@ func main() {
 	}
 	epoch_time := uint32(time.Now().Unix())
 	myblock := block.MakeSemiRandom_BlockHeader(diff, 1, epoch_time)
-	log.Println(block.Hex_BlockHeader(myblock))
+	log.Println(block.Doublesha256_BlockHeader(myblock))
 }

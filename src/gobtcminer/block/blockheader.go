@@ -8,6 +8,8 @@ For difficulty history, see: http://www.coindesk.com/data/bitcoin-mining-difficu
 package block
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"math/rand"
 	"strconv"
 	"time"
@@ -63,7 +65,7 @@ func MakeSemiRandom_BlockHeader(difficulty float64, version byte, time uint32) B
 }
 
 //Return the hex string of a given block header.
-func Hex_BlockHeader(bh BlockHeader) string {
+func hex_BlockHeader(bh BlockHeader) string {
 	hex_version := strconv.FormatInt(int64(bh.Version), 16) //Little Endian format already, We keep it that way.
 	switch length := len(hex_version); length {
 	case 1:
@@ -87,28 +89,16 @@ func randStringBytes(n int) string {
 	return string(b)
 }
 
-func Hex_to_bin(hex string) []byte {
-	var bins = map[byte][]byte{
-		'0': []byte{'0', '0', '0', '0'},
-		'1': []byte{'0', '0', '0', '1'},
-		'2': []byte{'0', '0', '1', '0'},
-		'3': []byte{'0', '0', '1', '1'},
-		'4': []byte{'0', '1', '0', '0'},
-		'5': []byte{'0', '1', '0', '1'},
-		'6': []byte{'0', '1', '1', '0'},
-		'7': []byte{'0', '1', '1', '1'},
-		'8': []byte{'1', '0', '0', '0'},
-		'9': []byte{'1', '0', '0', '1'},
-		'a': []byte{'1', '0', '1', '0'},
-		'b': []byte{'1', '0', '1', '1'},
-		'c': []byte{'1', '1', '0', '0'},
-		'd': []byte{'1', '1', '0', '1'},
-		'e': []byte{'1', '1', '1', '0'},
-		'f': []byte{'1', '1', '1', '1'},
-	}
-	binary_res := make([]byte, 640)
-	for i := 0; i < len(hex); i++ {
-		binary_res = append(binary_res[:], bins[hex[i]]...)
-	}
-	return binary_res
+//Return a Sha256 Hash of given data
+func hash256(data []byte) []byte {
+	hash := sha256.New()
+	hash.Write(data)
+	return hash.Sum(nil)
+}
+
+//Returns a string representation of doubled-hashed block header
+func Doublesha256_BlockHeader(bh BlockHeader) string {
+	data := []byte(hex_BlockHeader(bh))
+	hash := hash256(hash256(data))
+	return hex.EncodeToString(hash)
 }
