@@ -2,9 +2,11 @@ package main
 
 import (
 	"github.com/btcsuite/btcrpcclient"
+	"gobtcminer/block"
 	"gobtcminer/client"
 	"gobtcminer/config"
 	"log"
+	"time"
 )
 
 func main() {
@@ -35,5 +37,7 @@ func main() {
 	if err != nil {
 		log.Fatal("Error getting difficulty: %v", err)
 	}
-	log.Println(diff)
+	epoch_time := uint32(time.Now().Unix())
+	myblock := block.MakeSemiRandom_BlockHeader(diff, 1, epoch_time)
+	log.Println(block.Hex_BlockHeader(myblock))
 }
