@@ -5,6 +5,7 @@ import (
 	"gobtcminer/block"
 	"gobtcminer/client"
 	"gobtcminer/config"
+	"gobtcminer/mining"
 	"log"
 	"time"
 )
@@ -23,21 +24,18 @@ func main() {
 	if err != nil {
 		log.Fatalf("Error creating new btc client: %v", err)
 	}
+
 	// Verifying Account
 	if val, err := client.VerifyAccount(rpcclient, conf.Account); !val {
 		log.Printf("Error: %v ", err)
 		client.ListAccounts(rpcclient)
 	}
-	//Loading and parsing values from Bitcoin API call
-	_, err = client.GetResultTemplate(conf.User, conf.Password, conf.Host)
-	if err != nil {
-		log.Fatalf("Error getting mining data: %v", err)
-	}
+
 	diff, err := client.GetDifficulty(conf.User, conf.Password, conf.Host)
 	if err != nil {
 		log.Fatal("Error getting difficulty: %v", err)
 	}
 	epoch_time := uint32(time.Now().Unix())
-	myblock := block.MakeSemiRandom_BlockHeader(diff, 1, epoch_time)
-	log.Println(block.Doublesha256_BlockHeader(myblock))
+	myblock := block.MakeSemiRandom_BlockHeader(2, epoch_time)
+	mining.Mining_BlockHeader(diff, myblock)
 }
