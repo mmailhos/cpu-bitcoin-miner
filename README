@@ -1,4 +1,3 @@
-# GoBtcMiner
 CPU Bitcoin Miner in Go
 
 Implementation of a Bitcoin mining client in Go to take advantage of the built-in concurrency primitives of the language. 
