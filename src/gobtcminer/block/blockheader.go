@@ -86,3 +86,29 @@ func randStringBytes(n int) string {
 	}
 	return string(b)
 }
+
+func Hex_to_bin(hex string) []byte {
+	var bins = map[byte][]byte{
+		'0': []byte{'0', '0', '0', '0'},
+		'1': []byte{'0', '0', '0', '1'},
+		'2': []byte{'0', '0', '1', '0'},
+		'3': []byte{'0', '0', '1', '1'},
+		'4': []byte{'0', '1', '0', '0'},
+		'5': []byte{'0', '1', '0', '1'},
+		'6': []byte{'0', '1', '1', '0'},
+		'7': []byte{'0', '1', '1', '1'},
+		'8': []byte{'1', '0', '0', '0'},
+		'9': []byte{'1', '0', '0', '1'},
+		'a': []byte{'1', '0', '1', '0'},
+		'b': []byte{'1', '0', '1', '1'},
+		'c': []byte{'1', '1', '0', '0'},
+		'd': []byte{'1', '1', '0', '1'},
+		'e': []byte{'1', '1', '1', '0'},
+		'f': []byte{'1', '1', '1', '1'},
+	}
+	binary_res := make([]byte, 640)
+	for i := 0; i < len(hex); i++ {
+		binary_res = append(binary_res[:], bins[hex[i]]...)
+	}
+	return binary_res
+}
