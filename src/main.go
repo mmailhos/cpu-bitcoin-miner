@@ -35,7 +35,15 @@ func main() {
 	if err != nil {
 		log.Fatal("Error getting difficulty: %v", err)
 	}
+
+	//Starting a block per thread
 	epoch_time := uint32(time.Now().Unix())
-	myblock := block.MakeSemiRandom_BlockHeader(2, epoch_time)
-	mining.Mining_BlockHeader(diff, myblock)
+	check_chan := make(chan mining.ChannelCheck)
+	for i := 0; i < conf.Threads; i++ {
+		myblock := block.MakeSemiRandom_BlockHeader(2, epoch_time)
+		go mining.Mining_BlockHeader(i, diff, myblock, check_chan)
+	}
+	for {
+		//Mining
+	}
 }
