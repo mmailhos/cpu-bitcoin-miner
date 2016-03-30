@@ -20,7 +20,7 @@ func main() {
 	}
 
 	epoch_time := uint32(time.Now().Unix())
-	dispatcher := mining.NewDispatcher(conf.Threads)
+	dispatcher := mining.NewDispatcher(conf.Threads, monitor)
 
 	//Run new chunks in the jobqueue
 	for i := 0; i < 30; i++ {

@@ -6,7 +6,13 @@ Description: Dispatch the different job to the pool of miners
 
 package mining
 
-var ChunkQueueCapacity int = 300
+import (
+	"gobtcminer/logger"
+	"time"
+)
+
+var chunk_queue_capacity int = 300
+var monitor logger.Logger
 
 //Dispatcher Entity.
 //Contains a Pool of chans to send and receive from other miners.
@@ -17,21 +23,27 @@ type Dispatcher struct {
 }
 
 //Make new Dispatcher
-func NewDispatcher(max_miners int) *Dispatcher {
+func NewDispatcher(max_miners int, log logger.Logger) *Dispatcher {
 	pool := make(chan chan Chunk, max_miners)
-	chunkqueue := make(chan Chunk, ChunkQueueCapacity)
+	chunkqueue := make(chan Chunk, chunk_queue_capacity)
+	monitor = log
+	monitor.Print("info", "New Dispatcher created")
 	return &Dispatcher{MiningPool: pool, ChunkQueue: chunkqueue}
 }
 
+//Start the new dispatcher, create the miners, start them and begin dispatching.
 func (dispatcher *Dispatcher) Run() {
 	for i := 0; i < cap(dispatcher.MiningPool); i++ {
 		NewMiner(i, dispatcher.MiningPool).Start()
+		monitor.Print("info", "New Miner added to the pool")
 	}
 	dispatcher.dispatch()
 }
 
-//Dispatcher waits for chunk and send it to an available miner
+//Dispatcher start the counter for monitoring. Waits for chunk and send it to an available miner
 func (dispatcher *Dispatcher) dispatch() {
+	monitor.Print("info", "Starting time counter")
+	monitor.BeginTime = time.Now()
 	for {
 		select {
 		case job := <-dispatcher.ChunkQueue:
@@ -39,7 +51,7 @@ func (dispatcher *Dispatcher) dispatch() {
 				//Get a miner available
 				BlockToSend := <-dispatcher.MiningPool
 				BlockToSend <- job
-
+				monitor.Print("info", "New Chunk sent to the pool")
 			}(job)
 		}
 	}
