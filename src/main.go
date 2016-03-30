@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/btcsuite/btcrpcclient"
-	"gobtcminer/block"
 	"gobtcminer/client"
 	"gobtcminer/config"
 	"gobtcminer/mining"
@@ -36,14 +35,14 @@ func main() {
 		log.Fatal("Error getting difficulty: %v", err)
 	}
 
-	//Starting a block per thread
 	epoch_time := uint32(time.Now().Unix())
-	check_chan := make(chan mining.ChannelCheck)
-	for i := 0; i < conf.Threads; i++ {
-		myblock := block.MakeSemiRandom_BlockHeader(2, epoch_time)
-		go mining.Mining_BlockHeader(i, diff, myblock, check_chan)
+	dispatcher := mining.NewDispatcher(conf.Threads)
+
+	//Run new chunks in the jobqueue
+	for i := 0; i < 30; i++ {
+		if len(dispatcher.ChunkQueue) < cap(dispatcher.ChunkQueue) {
+			dispatcher.ChunkQueue <- mining.NewChunk(2, epoch_time, diff)
+		}
 	}
-	for {
-		//Mining
-	}
+	dispatcher.Run()
 }

@@ -15,7 +15,7 @@ type Chunk struct {
 	Nonce  uint32
 }
 
-// Creating Chunk 'job'
+// Creating Chunk 'job' with semi-random block header
 func NewChunk(version byte, epoch uint32, difficulty float64) Chunk {
 	new_block := block.MakeSemiRandom_BlockHeader(version, epoch)
 	target := Gettarget(difficulty, new_block.Bits)
