@@ -11,12 +11,19 @@ import (
 	"log"
 )
 
+type JsonLogger struct {
+	Activated bool   `json:"activated"`
+	Level     string `json:"level"`
+	File      string `json:"file"`
+}
+
 type Config struct {
-	User     string `json:"user"`
-	Password string `json:"password"`
-	Host     string `json:"host"`
-	Account  string `json:"account"`
-	Threads  int    `json:"threads"`
+	User     string     `json:"user"`
+	Password string     `json:"password"`
+	Host     string     `json:"host"`
+	Account  string     `json:"account"`
+	Threads  int        `json:"threads"`
+	Log      JsonLogger `json:"log"`
 }
 
 //readconf(filename)
