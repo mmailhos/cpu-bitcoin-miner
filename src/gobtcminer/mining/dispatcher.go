@@ -8,6 +8,7 @@ package mining
 
 import (
 	"gobtcminer/logger"
+	"runtime"
 	"time"
 )
 
@@ -23,8 +24,8 @@ type Dispatcher struct {
 }
 
 //Make new Dispatcher
-func NewDispatcher(max_miners int, log logger.Logger) *Dispatcher {
-	pool := make(chan chan Chunk, max_miners)
+func NewDispatcher(log logger.Logger) *Dispatcher {
+	pool := make(chan chan Chunk, poolsize())
 	chunkqueue := make(chan Chunk, chunk_queue_capacity)
 	monitor = log
 	monitor.Print("info", "New Dispatcher created")
@@ -54,5 +55,20 @@ func (dispatcher *Dispatcher) dispatch() {
 				monitor.Print("info", "New Chunk sent to the pool")
 			}(job)
 		}
+	}
+}
+
+//Set the number of miners depending on the number of threads of the machine.
+//Made to optimize and reduce the overhead on multiplex scheduling
+func poolsize() int {
+	switch maxprocs := runtime.GOMAXPROCS(0); maxprocs {
+	case 1:
+		return 1
+	case 2:
+		return 1
+	case 3:
+		return 2
+	default:
+		return maxprocs - 2
 	}
 }

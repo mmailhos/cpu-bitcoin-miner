@@ -22,7 +22,6 @@ type Config struct {
 	Password string     `json:"password"`
 	Host     string     `json:"host"`
 	Account  string     `json:"account"`
-	Threads  int        `json:"threads"`
 	Log      JsonLogger `json:"log"`
 }
 

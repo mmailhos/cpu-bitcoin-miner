@@ -3,7 +3,6 @@
     "password" : "Pa$$w0rd",
     "host" : "127.0.0.1:8332",
     "account" : "MyBTCAccount",
-    "threads": 3,
     "log": {
         "Activated": true,
         "Level": "info",

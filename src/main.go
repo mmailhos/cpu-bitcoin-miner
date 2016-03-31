@@ -18,9 +18,8 @@ func main() {
 	if err != nil {
 		monitor.Print("info", "Error getting difficulty: "+err.Error())
 	}
-
 	epoch_time := uint32(time.Now().Unix())
-	dispatcher := mining.NewDispatcher(conf.Threads, monitor)
+	dispatcher := mining.NewDispatcher(monitor)
 
 	//Run new chunks in the jobqueue
 	for i := 0; i < 30; i++ {
