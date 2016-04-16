@@ -30,26 +30,25 @@ go run src/main.go
 
 This project is for educational purpose at start for a deep and better understanding of Bitcoin _under the hood_ as well as the discovery of Go.
 
-## Dependencies
-
-None, beside your Bitcoin client. 
-The btcsuite/btcrpcclient library was used for the JSON-RPC call at the beginning but was recently removed due to its deprecated mining implementation (BIP 0023 again).
-
 ## Implementation
 
 The interactions with the Bitcoin Core client are currently done with __ugly__ curl calls but we are soon going to move to our own Web Socket. This will allow us to avoid executing external Unix commands, to maintain long-held connections with the client and to reduce the overhead related to HTTP.
 
 The overall Bitcoin implementation, but especially the Block Header, stay as close as possible to the Reference. 
 
+## Performance
+
+The current version is able to perform __556.000__ operations (double sha256 hashs) per second on a 2.4 GHz Intel Core i5. 
+
+## Dependencies
+
+None, beside your Bitcoin client. 
+The btcsuite/btcrpcclient library was used for the JSON-RPC call at the beginning but was recently removed due to its deprecated mining implementation (BIP 0023 again).
 The mining side is implemented with a Job/Worker/Dispatcher pattern. 
 
 ## Roadmap
 
 Checkout the TODO list to see the incoming features and what is needed to meet the Bitcoin standard. 
-
-## Performance
-
-The current version is able to perform __556.000__ operations (double sha256 hashs) per second on a 2.4 GHz Intel Core i5. 
 
 ## Authors
 - Mathieu Mailhos
