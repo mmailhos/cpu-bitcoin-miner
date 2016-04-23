@@ -18,13 +18,17 @@ func main() {
 	if err != nil {
 		monitor.Print("info", "Error getting difficulty: "+err.Error())
 	}
-	epoch_time := uint32(time.Now().Unix())
 	dispatcher := mining.NewDispatcher(monitor)
-
+	filling := true
 	//Run new chunks in the jobqueue
-	for i := 0; i < 30; i++ {
-		if len(dispatcher.ChunkQueue) < cap(dispatcher.ChunkQueue) {
-			dispatcher.ChunkQueue <- mining.NewChunk(2, epoch_time, diff)
+	for filling == true {
+		for _, chunk := range mining.NewChunkList(2, uint32(time.Now().Unix()), diff) {
+			if len(dispatcher.ChunkQueue) < cap(dispatcher.ChunkQueue) {
+				dispatcher.ChunkQueue <- chunk
+			} else {
+				filling = false
+				break
+			}
 		}
 	}
 	dispatcher.Run()
