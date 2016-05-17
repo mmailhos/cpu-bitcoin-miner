@@ -14,7 +14,7 @@ import (
 
 var chunk_queue_capacity int = 300
 var monitor logger.Logger
-var psize = poolsize()
+var Psize = poolsize()
 
 //Dispatcher Entity.
 //Contains a Pool of chans to send and receive from other miners.
@@ -26,7 +26,7 @@ type Dispatcher struct {
 
 //Make new Dispatcher
 func NewDispatcher(log logger.Logger) *Dispatcher {
-	pool := make(chan chan Chunk, psize)
+	pool := make(chan chan Chunk, Psize)
 	chunkqueue := make(chan Chunk, chunk_queue_capacity)
 	monitor = log
 	monitor.Print("info", "New Dispatcher created")

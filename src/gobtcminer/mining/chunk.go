@@ -20,10 +20,10 @@ type Chunk struct {
 func NewChunkList(version byte, epoch uint32, difficulty float64) []Chunk {
 	new_block := block.MakeSemiRandom_BlockHeader(version, epoch)
 	target := Gettarget(difficulty, new_block.Bits)
-	chunklist := make([]Chunk, psize)
-	for i := 0; i < psize; i++ {
+	chunklist := make([]Chunk, Psize)
+	for i := 0; i < Psize; i++ {
 		// Convert values to match MAX_NONCE type
-		poolsize := uint32(psize)
+		poolsize := uint32(Psize)
 		iterator := uint32(i)
 		startvalue := iterator * (MAX_NONCE / poolsize)
 		if i > 0 {
