@@ -2,6 +2,8 @@
 Author: Mathieu Mailhos
 Filename: init.go
 Description: Determin the performances of the machin. Gives the machin 5 seconds to mine as many blocks as possible on a given random chunk. This will allow a more efficient split for the block header between the different miners, using this pre-defined value
+
+DEPRECATED - Use of a Timeout per miner instead of this approximation
 */
 
 package initialization
@@ -44,8 +46,8 @@ func Init() uint32 {
 				timeout <- true
 			}
 			fmt.Println("")
-			total := counter.HashCount / 5
-			log.Println("Done initializing: " + strconv.Itoa(int(total)) + " operations per seconds.")
+			total := counter.HashCount / 5 / uint32(mining.Psize)
+			log.Println("Done initializing: " + strconv.Itoa(int(total)) + " operations per seconds per thread")
 			return total
 		case <-time.After(time.Second * 1):
 			fmt.Print(". ")

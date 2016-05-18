@@ -3,7 +3,6 @@ package main
 import (
 	"gobtcminer/client"
 	"gobtcminer/config"
-	"gobtcminer/initialization"
 	"gobtcminer/logger"
 	"gobtcminer/mining"
 	"time"
@@ -13,7 +12,6 @@ var monitor logger.Logger
 
 func main() {
 
-	initialization.Init()
 	// Read and parse the configuration file
 	conf := config.Readconf("config.json")
 	monitor = logger.NewLogger(conf.Log)
