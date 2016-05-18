@@ -10,6 +10,7 @@ import (
 	"errors"
 	"gobtcminer/block"
 	"strconv"
+	"time"
 )
 
 //Macros
@@ -61,28 +62,45 @@ func (mine Miner) Stop() {
 	}()
 }
 
-//Mining a blockheader and returning the nonce value if suceeded. Splited into two to avoid useless checks and increment if the monitoring is not activated.
+//Mining a blockheader and returning the nonce value if suceeded. Splited into two to avoid useless checks and increment if the monitoring is not activated. Mining can not take more time than 1 second as the block header expires due to the epoch time field changing constantly.
 func (mine *Miner) mining(chunk Chunk) (uint32, error) {
+	timeout := make(chan bool, 1)
+	go func() {
+		time.Sleep(1 * time.Second)
+		timeout <- true
+	}()
 	if !monitor.Activated {
 		for nonce := uint32(0); nonce < MAX_NONCE; nonce++ {
-			chunk.Block.Nonce = nonce
-			if hash := block.Doublesha256_BlockHeader(chunk.Block); hash < chunk.Target {
-				return nonce, nil
+			select {
+			case <-timeout:
+				return 0, nil
+			default:
+				chunk.Block.Nonce = nonce
+				if hash := block.Doublesha256_BlockHeader(chunk.Block); hash < chunk.Target {
+					return nonce, nil
+				}
 			}
 		}
 	} else {
 		for count, nonce := uint32(0), uint32(0); nonce < MAX_NONCE; nonce, count = nonce+1, count+1 {
-			chunk.Block.Nonce = nonce
-			if hash := block.Doublesha256_BlockHeader(chunk.Block); hash < chunk.Target {
-				monitor.IncrementBlockCount()
-				monitor.Print("info", "NEW BLOCK FOUND!! Nonce:"+strconv.Itoa(int(nonce))+" Miner:"+strconv.Itoa(mine.Id)+" Hash:"+hash)
-				return nonce, nil
-			} else {
-				monitor.Print("debug", "Nonce:"+strconv.Itoa(int(nonce))+" Miner:"+strconv.Itoa(mine.Id)+" Hash:"+hash)
-			}
-			if count == HASHCOUNT_SPAN {
-				monitor.IncrementHashCount(count)
-				count = 0
+			select {
+			case <-timeout:
+				monitor.Print("info", "Timeout, moving to next block. "+strconv.Itoa(int(count))+" operations done on this block by Miner "+strconv.Itoa(mine.Id))
+				return 0, nil
+			default:
+
+				chunk.Block.Nonce = nonce
+				if hash := block.Doublesha256_BlockHeader(chunk.Block); hash < chunk.Target {
+					monitor.IncrementBlockCount()
+					monitor.Print("info", "NEW BLOCK FOUND!! Nonce:"+strconv.Itoa(int(nonce))+" Miner:"+strconv.Itoa(mine.Id)+" Hash:"+hash)
+					return nonce, nil
+				} else {
+					monitor.Print("debug", "Nonce:"+strconv.Itoa(int(nonce))+" Miner:"+strconv.Itoa(mine.Id)+" Hash:"+hash)
+				}
+				if count == HASHCOUNT_SPAN {
+					monitor.IncrementHashCount(count)
+					count = 0
+				}
 			}
 		}
 	}
