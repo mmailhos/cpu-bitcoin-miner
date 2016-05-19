@@ -70,7 +70,7 @@ func (mine *Miner) mining(chunk Chunk) (uint32, error) {
 		timeout <- true
 	}()
 	if !monitor.Activated {
-		for nonce := uint32(0); nonce < MAX_NONCE; nonce++ {
+		for nonce := chunk.StartNonce; nonce < chunk.EndNonce; nonce++ {
 			select {
 			case <-timeout:
 				return 0, nil
@@ -82,7 +82,7 @@ func (mine *Miner) mining(chunk Chunk) (uint32, error) {
 			}
 		}
 	} else {
-		for count, nonce := uint32(0), uint32(0); nonce < MAX_NONCE; nonce, count = nonce+1, count+1 {
+		for count, nonce := uint32(0), chunk.StartNonce; nonce < chunk.EndNonce; nonce, count = nonce+1, count+1 {
 			select {
 			case <-timeout:
 				monitor.Print("info", "Timeout, moving to next block. "+strconv.Itoa(int(count))+" operations done on this block by Miner "+strconv.Itoa(mine.Id))
