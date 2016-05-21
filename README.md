@@ -38,7 +38,7 @@ The overall Bitcoin implementation, but especially the Block Header, stay as clo
 
 ## Performance
 
-The current version is able to perform __556.000__ operations (double sha256 hashs) per second on a 2.4 GHz Intel Core i5. 
+The current version is able to perform around __320.000__ operations (double sha256 hashs) per second on a 2.4 GHz Intel Core i5.
 
 ## Dependencies
 
