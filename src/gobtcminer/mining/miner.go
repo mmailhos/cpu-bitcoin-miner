@@ -88,7 +88,6 @@ func (mine *Miner) mining(chunk Chunk) (uint32, error) {
 				monitor.Print("info", "Timeout, moving to next block. "+strconv.Itoa(int(count))+" operations done on this block by Miner "+strconv.Itoa(mine.Id))
 				return 0, nil
 			default:
-
 				chunk.Block.Nonce = nonce
 				if hash := block.Doublesha256_BlockHeader(chunk.Block); hash < chunk.Target {
 					monitor.IncrementBlockCount()

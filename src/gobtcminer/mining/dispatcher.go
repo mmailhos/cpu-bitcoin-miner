@@ -39,22 +39,20 @@ func (dispatcher *Dispatcher) Run() {
 		NewMiner(i, dispatcher.MiningPool).Start()
 		monitor.Print("info", "New Miner added to the pool")
 	}
-	dispatcher.dispatch()
+	go dispatcher.Dispatch()
 }
 
 //Dispatcher start the counter for monitoring. Waits for chunk and send it to an available miner
-func (dispatcher *Dispatcher) dispatch() {
+func (dispatcher *Dispatcher) Dispatch() {
 	monitor.Print("info", "Starting time counter")
 	monitor.BeginTime = time.Now()
 	for {
+		monitor.Print("info", "waiting for a new chunk")
 		select {
 		case job := <-dispatcher.ChunkQueue:
-			go func(job Chunk) {
-				//Get a miner available
-				BlockToSend := <-dispatcher.MiningPool
-				BlockToSend <- job
-				monitor.Print("info", "New Chunk sent to the pool")
-			}(job)
+			AvailableMiner := <-dispatcher.MiningPool
+			AvailableMiner <- job
+			monitor.Print("info", "New Chunk sent to the pool")
 		}
 	}
 }

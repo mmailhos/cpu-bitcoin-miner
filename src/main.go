@@ -20,17 +20,15 @@ func main() {
 		monitor.Print("info", "Error getting difficulty: "+err.Error())
 	}
 	dispatcher := mining.NewDispatcher(monitor)
-	filling := true
-	//Run new chunks in the jobqueue
-	for filling == true {
+	dispatcher.Run()
+	//Add Chunks on a regular basis
+	for {
+		//Get a new Chunk and split it accordingly to the machin settings
 		for _, chunk := range mining.NewChunkList(2, uint32(time.Now().Unix()), diff) {
 			if len(dispatcher.ChunkQueue) < cap(dispatcher.ChunkQueue) {
 				dispatcher.ChunkQueue <- chunk
-			} else {
-				filling = false
-				break
 			}
 		}
+		time.Sleep(10 * time.Millisecond)
 	}
-	dispatcher.Run()
 }
