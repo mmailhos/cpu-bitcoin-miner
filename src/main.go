@@ -25,8 +25,8 @@ func main() {
 	for {
 		//Get a new Chunk and split it accordingly to the machin settings
 		for _, chunk := range mining.NewChunkList(2, uint32(time.Now().Unix()), diff) {
-			if len(dispatcher.ChunkQueue) < cap(dispatcher.ChunkQueue) {
-				dispatcher.ChunkQueue <- chunk
+			if len(dispatcher.ChunkQueueIn) < cap(dispatcher.ChunkQueueIn) {
+				dispatcher.ChunkQueueIn <- chunk
 			}
 		}
 		time.Sleep(10 * time.Millisecond)

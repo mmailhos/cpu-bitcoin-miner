@@ -14,6 +14,7 @@ type Chunk struct {
 	Target     string
 	StartNonce uint32
 	EndNonce   uint32
+	Valid      bool
 }
 
 // We are splitting a BlockHeader to spread the mining between the different goroutines
@@ -41,5 +42,6 @@ func newChunk(blockheader block.BlockHeader, target string, startnonce, endnonce
 		Block:      blockheader,
 		Target:     target,
 		StartNonce: startnonce,
-		EndNonce:   endnonce}
+		EndNonce:   endnonce,
+		Valid:      false}
 }
