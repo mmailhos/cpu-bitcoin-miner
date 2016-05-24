@@ -32,25 +32,34 @@ This project is for educational purpose at start for a deep and better understan
 
 ## Implementation
 
-The interactions with the Bitcoin Core client are currently done with __ugly__ curl calls but we are soon going to move to our own Web Socket. This will allow us to avoid executing external Unix commands, to maintain long-held connections with the client and to reduce the overhead related to HTTP.
+The interactions with the Bitcoin Core client are currently done with __ugly__ curl calls but we are soon going to move to our own Web Socket (coming days/weeks). This will allow us to avoid executing external Unix commands, to maintain long-held connections with the client and to reduce the overhead related to HTTP.
+
+The mining side is implemented with a Job/Worker/Dispatcher pattern.
+
+A WebSocket interacts with the Bitcoin Core Client. It sends the data to the Dispatcher which is formating it and spliting into 'Chunks'. Those Chunks are sent to the miners. When a successful block is found, it is sent back to the Dispatcher for verification and back to the WebSocket for submitting. 
 
 The overall Bitcoin implementation, but especially the Block Header, stay as close as possible to the Reference. 
 
 ## Performance
 
-The current version is able to perform around __320.000__ operations (double sha256 hashs) per second on a 2.4 GHz Intel Core i5.
+The current version is able to perform around __350.000__ operations (double sha256 hashs) per second on a 2.4 GHz Intel Core i5.
 
 ## Dependencies
 
 None, beside your Bitcoin client. 
 The btcsuite/btcrpcclient library was used for the JSON-RPC call at the beginning but was recently removed due to its deprecated mining implementation (BIP 0023 again).
-The mining side is implemented with a Job/Worker/Dispatcher pattern. 
 
 ## Roadmap
 
 Checkout the TODO list to see the incoming features and what is needed to meet the Bitcoin standard. 
 
-## Authors
+## Suggestions - Contact
+
+Any suggestions, comments, questions, ideas of features or advices for improvements are great welcome! 
+Please send me a message on Twitter @mathieumailhos.
+
+## Contributors
+
 - Mathieu Mailhos
 
 ## References
