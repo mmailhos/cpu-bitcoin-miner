@@ -24,15 +24,15 @@ type Logger struct {
 	BeginTime  time.Time  //Used for calculating the compute time for benchmarking
 }
 
-//Constructor function
-func NewLogger(logger config.JsonLogger) Logger {
+//NewLogger Constructor function
+func NewLogger(logger config.JSONLogger) Logger {
 	return Logger{
 		Activated: logger.Activated,
 		Level:     logger.Level,
 		File:      logger.File}
 }
 
-//Log
+//Print simply logs
 func (logger *Logger) Print(level string, output string) {
 	if logger.Activated {
 		if logger.Level == level {
@@ -43,14 +43,14 @@ func (logger *Logger) Print(level string, output string) {
 	}
 }
 
-//Increment the number of hash executed regularly. Use of a mutex to avoid race condition.
+//IncrementHashCount counts the number of hash executed regularly. Use of a mutex to avoid race condition.
 func (logger *Logger) IncrementHashCount(count uint32) {
 	logger.mux.Lock()
 	defer logger.mux.Unlock()
 	logger.HashCount += count
 }
 
-//Increment the number of succesfuly mined block. Use of a mutex to avoid race condition.
+//IncrementBlockCount increments the number of succesfuly mined block. Use of a mutex to avoid race condition.
 func (logger *Logger) IncrementBlockCount() {
 	logger.mux.Lock()
 	defer logger.mux.Unlock()

@@ -12,24 +12,26 @@ import (
 	"time"
 )
 
-//Macros
-const MAX_NONCE uint32 = 4294967295
-const HASHCOUNT_SPAN uint32 = 200000 //Counter big enough to avoid mutex bottleneck
+//MaxNonce standard value
+const MaxNonce uint32 = 4294967295
 
-//Mining entity defined by an Id. Worker.
+//HashCountSpan counter big enough to avoid mutex bottleneck
+const HashCountSpan uint32 = 200000
+
+//Miner entity defined by an ID. Worker.
 type Miner struct {
-	Id              int
+	ID              int
 	MiningPool      chan chan Chunk
 	BlockChannelIn  chan Chunk
 	BlockChannelOut chan Chunk
 	quit            chan bool
 }
 
-// Creating Miner 'Worker'
+//NewMiner Creates Miner 'Worker'
 func NewMiner(id int, miningpool chan chan Chunk, outchan chan Chunk) Miner {
 	monitor.Print("info", "New Miner created.")
 	return Miner{
-		Id:              id,
+		ID:              id,
 		MiningPool:      miningpool,
 		BlockChannelIn:  make(chan Chunk),
 		BlockChannelOut: outchan,
@@ -42,11 +44,11 @@ func (mine Miner) Start() {
 		for {
 			//We register the mine into the mining pool
 			mine.MiningPool <- mine.BlockChannelIn
-			monitor.Print("info", "Miner "+strconv.Itoa(mine.Id)+" available.")
+			monitor.Print("info", "Miner "+strconv.Itoa(mine.ID)+" available.")
 			select {
 			//We then receive a chunk to work on or we quit
 			case job := <-mine.BlockChannelIn:
-				monitor.Print("info", "Miner "+strconv.Itoa(mine.Id)+" starts mining.")
+				monitor.Print("info", "Miner "+strconv.Itoa(mine.ID)+" starts mining.")
 				success, chunk := mine.mining(job)
 				if success {
 					//Send Back to dispatcher for validation, to be sent back to Websocket
@@ -61,10 +63,10 @@ func (mine Miner) Start() {
 	}()
 }
 
-//Tells the Miner to stop working
+//Stop tells the Miner to stop working
 func (mine Miner) Stop() {
 	go func() {
-		monitor.Print("info", "Mine "+strconv.Itoa(mine.Id)+" stopped.")
+		monitor.Print("info", "Mine "+strconv.Itoa(mine.ID)+" stopped.")
 		mine.quit <- true
 	}()
 }
@@ -85,7 +87,7 @@ func (mine *Miner) mining(chunk Chunk) (bool, Chunk) {
 			default:
 				//Success
 				chunk.Block.Nonce = nonce
-				if hash := block.Doublesha256_BlockHeader(chunk.Block); hash < chunk.Target {
+				if hash := block.Doublesha256BlockHeader(chunk.Block); hash < chunk.Target {
 					return true, chunk
 				}
 			}
@@ -95,25 +97,25 @@ func (mine *Miner) mining(chunk Chunk) (bool, Chunk) {
 			select {
 			case <-timeout:
 				//Timeout
-				monitor.Print("info", "Timeout, moving to next block. "+strconv.Itoa(int(count))+" operations done on this block by Miner "+strconv.Itoa(mine.Id))
+				monitor.Print("info", "Timeout, moving to next block. "+strconv.Itoa(int(count))+" operations done on this block by Miner "+strconv.Itoa(mine.ID))
 				return false, chunk
 			default:
 				//Success
 				chunk.Block.Nonce = nonce
-				if hash := block.Doublesha256_BlockHeader(chunk.Block); hash < chunk.Target {
+				hash := block.Doublesha256BlockHeader(chunk.Block)
+                                if hash < chunk.Target {
 					monitor.IncrementBlockCount()
-					monitor.Print("info", "NEW BLOCK FOUND!! Nonce:"+strconv.Itoa(int(nonce))+" Miner:"+strconv.Itoa(mine.Id)+" Hash:"+hash)
+					monitor.Print("info", "NEW BLOCK FOUND!! Nonce:"+strconv.Itoa(int(nonce))+" Miner:"+strconv.Itoa(mine.ID)+" Hash:"+hash)
 					return true, chunk
-				} else {
-					monitor.Print("debug", "Nonce:"+strconv.Itoa(int(nonce))+" Miner:"+strconv.Itoa(mine.Id)+" Hash:"+hash)
 				}
-				if count == HASHCOUNT_SPAN {
+				monitor.Print("debug", "Nonce:"+strconv.Itoa(int(nonce))+" Miner:"+strconv.Itoa(mine.ID)+" Hash:"+hash)
+				if count == HashCountSpan {
 					monitor.IncrementHashCount(count)
 					count = 0
 				}
 			}
 		}
 	}
-	//MAX_NONCE Reached
+	//MaxNonce Reached
 	return false, chunk
 }

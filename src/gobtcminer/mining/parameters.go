@@ -8,7 +8,7 @@ package mining
 
 import "strconv"
 
-//TODO Calculate the right target depending on the difficulty. This one is totally made up for testing purpose.
+//Gettarget TODO Calculate the right target depending on the difficulty. This one is totally made up for testing purpose.
 func Gettarget(difficulty float64, bits uint32) string {
 	const padding int = 17
 	var target = ""

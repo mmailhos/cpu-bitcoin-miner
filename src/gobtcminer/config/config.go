@@ -1,4 +1,4 @@
-/*
+/*Package config for reading configuration file
 Author: Mathieu Mailhos
 Filename: config.go
 Description: Read and parse configuration file to enable a proper connection with the Bitcoin client.
@@ -11,23 +11,24 @@ import (
 	"log"
 )
 
-type JsonLogger struct {
+//JSONLogger structure for writing down logs
+type JSONLogger struct {
 	Activated bool   `json:"activated"`
 	Level     string `json:"level"`
 	File      string `json:"file"`
 }
 
+//Config simple configuration template from file
 type Config struct {
 	User     string     `json:"user"`
 	Password string     `json:"password"`
 	Host     string     `json:"host"`
 	Account  string     `json:"account"`
-	Log      JsonLogger `json:"log"`
+	Log      JSONLogger `json:"log"`
 }
 
-//readconf(filename)
-//Read and parse configuration file to enable connection with bitcoin client
-func Readconf(filename string) (conf Config) {
+//ReadConf reads and parse configuration file to enable connection with bitcoin client
+func ReadConf(filename string) (conf Config) {
 	content, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Fatalf("Error:", err)

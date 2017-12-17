@@ -13,7 +13,7 @@ var monitor logger.Logger
 func main() {
 
 	// Read and parse the configuration file
-	conf := config.Readconf("config.json")
+	conf := config.ReadConf("config.json")
 	monitor = logger.NewLogger(conf.Log)
 	diff, err := client.GetDifficulty(conf.User, conf.Password, conf.Host)
 	if err != nil {

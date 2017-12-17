@@ -13,8 +13,10 @@ import (
 	"time"
 )
 
-var chunk_queue_capacity int = 300
+var chunkQueueCapacity = 300
 var monitor logger.Logger
+
+//Psize size of the pool
 var Psize = poolsize()
 
 //Dispatcher Entity.
@@ -27,17 +29,17 @@ type Dispatcher struct {
 	ChunkQueueOut chan Chunk
 }
 
-//Make new Dispatcher
+//NewDispatcher element
 func NewDispatcher(log logger.Logger) *Dispatcher {
 	pool := make(chan chan Chunk, Psize)
-	chunkqueuein := make(chan Chunk, chunk_queue_capacity)
-	chunkqueueout := make(chan Chunk, chunk_queue_capacity)
+	chunkqueuein := make(chan Chunk, chunkQueueCapacity)
+	chunkqueueout := make(chan Chunk, chunkQueueCapacity)
 	monitor = log
 	monitor.Print("info", "New Dispatcher created")
 	return &Dispatcher{MiningPool: pool, ChunkQueueIn: chunkqueuein, ChunkQueueOut: chunkqueueout}
 }
 
-//Start the new dispatcher, create the miners, start them and begin dispatching.
+//Run starts the new dispatcher, create the miners, start them and begin dispatching.
 func (dispatcher *Dispatcher) Run() {
 	for i := 0; i < cap(dispatcher.MiningPool); i++ {
 		NewMiner(i, dispatcher.MiningPool, dispatcher.ChunkQueueOut).Start()
@@ -46,7 +48,7 @@ func (dispatcher *Dispatcher) Run() {
 	go dispatcher.Dispatch()
 }
 
-//Dispatcher start the counter for monitoring. Waits for chunk and send it to an available miner
+//Dispatch starts the counter for monitoring. Waits for chunk and send it to an available miner
 func (dispatcher *Dispatcher) Dispatch() {
 	monitor.Print("info", "Starting time counter")
 	monitor.BeginTime = time.Now()
@@ -67,7 +69,7 @@ func (dispatcher *Dispatcher) Dispatch() {
 
 //Verify given chunk. To be completed with more checks related to Bitcoin.
 func verifyChunk(chunk Chunk) bool {
-	if hash := block.Doublesha256_BlockHeader(chunk.Block); hash < chunk.Target {
+	if hash := block.Doublesha256BlockHeader(chunk.Block); hash < chunk.Target {
 		return true
 	}
 	return false
