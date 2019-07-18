@@ -1,7 +1,7 @@
 # CPU Bitcoin Miner in Go
 
 
-### Disclaimer: this is only a prototype of a bitcoin miner. Do not use it for official mining.
+### Disclaimer: my first Go project :) and only a prototype. Deprecated now (July 2019).
 
 ## Synopsis
 
@@ -10,7 +10,7 @@ This implementation integrates _getblocktemplate_ used for pool mining instead o
 
 ## Motivation
 
-This project is for **educational** purpose at start for a deep and better understanding of Bitcoin _under the hood_ as well as the discovery of Golang.
+This project is for **educational** purpose at start for a deep and better understanding of Bitcoin _under the hood_ as well as the discovery of Go (a LOT of things can be improved ;)
 
 ## Install & Run
 After cloning this repo, get the information that you need from your BitCoin Core Client and set your own configuration in config.json:
