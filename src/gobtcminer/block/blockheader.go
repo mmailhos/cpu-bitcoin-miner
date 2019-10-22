@@ -52,7 +52,7 @@ func Validate(block Header) bool {
 	return true
 }
 
-//MakeSemiRandomHeader makes a semi-random block header. Uses pre-defined time and version. Faster to generate than fully random blockheader.
+//MakeSemiRandomBlockHeader makes a semi-random block header. Uses pre-defined time and version. Faster to generate than fully random blockheader.
 func MakeSemiRandomBlockHeader(version byte, currentTime uint32) Header {
 	hashprevblock := randStringBytes(64)
 	hashmerkroot := randStringBytes(64)
@@ -94,7 +94,7 @@ func hash256(data []byte) []byte {
 	return hash.Sum(nil)
 }
 
-//Doublesha256Header returns a string representation of doubled-hashed block header
+//Doublesha256BlockHeader returns a string representation of doubled-hashed block header
 func Doublesha256BlockHeader(bh Header) string {
 	data := []byte(hexHeader(bh))
 	hash := hash256(hash256(data))
