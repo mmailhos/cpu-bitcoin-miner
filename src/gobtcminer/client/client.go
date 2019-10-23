@@ -5,9 +5,10 @@ Filename: client_curl.go
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
-	"os/exec"
+	"net/http"
 )
 
 //TransactionTemplate Missing: depends[]
@@ -46,19 +47,56 @@ type difficultyTemplate struct {
 	ID         string  `json:"id"`
 }
 
+// btcClientParamsCaps define a list of capabilities to be ingested in some methods in HTTP requests to the Bitcoin client
+type btcClientParamsCaps struct {
+	Capabilities []string `json:"capabilities"`
+}
+
+// btcClientPayload is a HTTP Payload for the Bitcoin client
+type btcClientPayload struct {
+	Jsonrpc    string                `json:"jsonrpc"`
+	ID         string                `json:"id"`
+	Method     string                `json:"method"`
+	Parameters []btcClientParamsCaps `json:"params",omitempty`
+}
+
 // VERY Temporary work-around for GetBlockTemplate() from BP023 ;)
 //GetResultTemplate(user, password, host)
 //Get and parse data received from Bitcoin client on a getblocktemplate request
 func getResultTemplate(user, password, host string) (rtp ResultTemplate, err error) {
 	var btp blockTemplate
-	command := "curl -u " + user + ":" + password + ` --data-binary '{"jsonrpc": "1.1", "id":"0", "method": "getblocktemplate", "params": [{"capabilities": ["coinbasetxn", "workid", "coinbase/append"]}] }'   -H 'content-type: application/json;' http://` + host + "/"
-	out, err := exec.Command("sh", "-c", command).Output()
-	if err != nil {
-		return
+
+	caps := []string{"coinbasetxn", "workid", "coinbase/append"}
+	params := btcClientParamsCaps{Capabilities: caps}
+	data := btcClientPayload{
+		Jsonrpc:    "1.1",
+		ID:         "0",
+		Method:     "getblocktemplate",
+		Parameters: []btcClientParamsCaps{params},
 	}
-	err = json.Unmarshal(out, &btp)
+	payloadBytes, err := json.Marshal(data)
 	if err != nil {
-		return
+		return btp.Result, err
+	}
+	body := bytes.NewReader(payloadBytes)
+
+	req, err := http.NewRequest("POST", "http://"+host, body)
+	if err != nil {
+		return btp.Result, err
+	}
+	req.SetBasicAuth(user, password)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return btp.Result, err
+	}
+	defer resp.Body.Close()
+
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(&btp)
+	if err != nil {
+		return btp.Result, err
 	}
 	if btp.Error == "" {
 		return btp.Result, nil
@@ -68,16 +106,37 @@ func getResultTemplate(user, password, host string) (rtp ResultTemplate, err err
 
 //GetDifficulty function that retrieves current difficulty from bitcoin client
 func GetDifficulty(user, password, host string) (difficulty float64, err error) {
-	command := "curl -u " + user + ":" + password + ` --data-binary '{"jsonrpc": "1.1", "id":"0", "method": "getdifficulty"}'   -H 'content-type: application/json;' http://` + host + "/"
 	var dif difficultyTemplate
-	out, err := exec.Command("sh", "-c", command).Output()
-	if err != nil {
-		return
+	data := btcClientPayload{
+		Jsonrpc: "1.1",
+		ID:      "0",
+		Method:  "getdifficulty",
 	}
-	err = json.Unmarshal(out, &dif)
+	payloadBytes, err := json.Marshal(data)
 	if err != nil {
-		return
+		return dif.Difficulty, err
 	}
+	body := bytes.NewReader(payloadBytes)
+
+	req, err := http.NewRequest("GET", "http://"+host, body)
+	if err != nil {
+		return dif.Difficulty, err
+	}
+	req.SetBasicAuth(user, password)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return dif.Difficulty, err
+	}
+	defer resp.Body.Close()
+
+	decoder := json.NewDecoder(resp.Body)
+	err = decoder.Decode(&dif)
+	if err != nil {
+		return dif.Difficulty, err
+	}
+
 	if dif.Error == "" {
 		return dif.Difficulty, nil
 	}

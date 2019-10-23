@@ -69,10 +69,8 @@ func (dispatcher *Dispatcher) Dispatch() {
 
 //Verify given chunk. To be completed with more checks related to Bitcoin.
 func verifyChunk(chunk Chunk) bool {
-	if hash := block.Doublesha256BlockHeader(chunk.Block); hash < chunk.Target {
-		return true
-	}
-	return false
+	hash := block.Doublesha256BlockHeader(chunk.Block)
+	return hash < chunk.Target
 }
 
 //Set the number of miners depending on the number of threads of the machine.
