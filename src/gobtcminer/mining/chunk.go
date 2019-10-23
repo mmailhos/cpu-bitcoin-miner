@@ -43,5 +43,6 @@ func newChunk(blockheader block.Header, target string, startnonce, endnonce uint
 		Target:     target,
 		StartNonce: startnonce,
 		EndNonce:   endnonce,
-		Valid:      false}
+		Valid:      false,
+	}
 }
