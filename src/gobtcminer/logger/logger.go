@@ -29,7 +29,8 @@ func NewLogger(logger config.JSONLogger) Logger {
 	return Logger{
 		Activated: logger.Activated,
 		Level:     logger.Level,
-		File:      logger.File}
+		File:      logger.File,
+	}
 }
 
 //Print simply logs
