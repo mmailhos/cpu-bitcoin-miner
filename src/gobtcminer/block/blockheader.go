@@ -10,6 +10,7 @@ package block
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"math/rand"
 	"strconv"
 	"time"
@@ -27,30 +28,42 @@ type Header struct {
 	Nonce         uint32 //32Bits number - iterator
 }
 
-//Validate the syntax of each field. Difficulty is not checked since we might need to check older block. Nonce either since it starts at 0.
-func Validate(block Header) bool {
-	validVersion := false
-	versionList := [3]byte{1, 2, 3}
-	for _, version := range versionList {
-		if block.Version == version {
-			validVersion = true
-			break
-		}
-	}
-	if validVersion == false {
-		return false
+// Validate a block header
+// Difficulty is not checked since we might need to check older block. Nonce neither as it starts at 0.
+func (block *Header) Validate() error {
+	err := errors.New("invalid version")
+	if block.Version < 1 || block.Version > 3 {
+		return err
 	}
 
 	if len(block.HashPrevBlock) > 32 || len(block.HashMerkRoot) > 32 {
-		return false
+		return err
 	}
 
 	//1230940800 is 3th Jan 2009 - First Version of Bitcoin
 	if block.Time < bitcoinCreationDate || block.Time > uint32(time.Now().Unix()) {
-		return false
+		return err
 	}
-	return true
+	return nil
 }
+
+//Return the hex string of a given block header.
+func (block *Header) hex() string {
+	hexVersion := strconv.FormatInt(int64(block.Version), 16) //Little Endian format already, we keep it that way.
+	switch length := len(hexVersion); length {
+	case 1:
+		hexVersion = "0" + hexVersion + "000000"
+	case 2:
+		hexVersion = hexVersion + "000000"
+	}
+	hexTime := strconv.FormatInt(int64(block.Time), 16)
+	hexNonce := strconv.FormatInt(int64(block.Nonce), 16)
+	hexBits := strconv.FormatInt(int64(block.Bits), 16)
+	return hexVersion + block.HashPrevBlock + block.HashMerkRoot + hexTime + hexBits + hexNonce
+}
+
+//  Common functions
+//
 
 //MakeSemiRandomBlockHeader makes a semi-random block header. Uses pre-defined time and version. Faster to generate than fully random blockheader.
 func MakeSemiRandomBlockHeader(version byte, currentTime uint32) Header {
@@ -60,21 +73,6 @@ func MakeSemiRandomBlockHeader(version byte, currentTime uint32) Header {
 	nonce := rand.Uint32()
 	bits := rand.Uint32()
 	return Header{Version: version, HashPrevBlock: hashprevblock, HashMerkRoot: hashmerkroot, Bits: bits, Time: currentTime, Nonce: nonce}
-}
-
-//Return the hex string of a given block header.
-func hexHeader(bh Header) string {
-	hexVersion := strconv.FormatInt(int64(bh.Version), 16) //Little Endian format already, We keep it that way.
-	switch length := len(hexVersion); length {
-	case 1:
-		hexVersion = "0" + hexVersion + "000000"
-	case 2:
-		hexVersion = hexVersion + "000000"
-	}
-	hexTime := strconv.FormatInt(int64(bh.Time), 16)
-	hexNonce := strconv.FormatInt(int64(bh.Nonce), 16)
-	hexBits := strconv.FormatInt(int64(bh.Bits), 16)
-	return hexVersion + bh.HashPrevBlock + bh.HashMerkRoot + hexTime + hexBits + hexNonce
 }
 
 //Generate Hex string-representated number of n characters
@@ -96,7 +94,7 @@ func hash256(data []byte) []byte {
 
 //Doublesha256BlockHeader returns a string representation of doubled-hashed block header
 func Doublesha256BlockHeader(bh Header) string {
-	data := []byte(hexHeader(bh))
+	data := []byte(bh.hex())
 	hash := hash256(hash256(data))
 	return hex.EncodeToString(hash)
 }
